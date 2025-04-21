@@ -58,3 +58,68 @@ SELECT m.product_code, d.product, m.manufacturing_cost FROM fact_manufacturing_c
 -- ----------------------------------------------------------------------------------------------
 
 -- 6 Q
+
+  SELECT d.customer_code, d.customer, 
+		ROUND(AVG(f.pre_invoice_discount_pct), 4)   AS average_discount_percentage
+		FROM dim_customer AS d INNER JOIN fact_pre_invoice_deductions AS f ON 
+        d.customer_code = f.customer_code 
+        WHERE f.fiscal_year = 2021 AND d.market = "India" GROUP BY d.customer, d.customer_code
+        ORDER BY average_discount_percentage DESC LIMIT 5 ;
+-- ----------------------------------------------------------------------------------------------
+
+-- 7 Q
+
+SELECT CONCAT(MONTHNAME(fs.date), " ", YEAR(fs.date)) AS Month, fs.fiscal_year AS Year,
+		SUM(ROUND((fg.gross_price * fs.sold_quantity), 2)) AS Gross_Sales_Amount
+		FROM fact_sales_monthly
+		AS fs INNER JOIN fact_gross_price AS fg ON
+        fs.product_code = fg.product_code 
+        INNER JOIN dim_customer AS d ON d.customer_code = fs.customer_code
+        WHERE customer = "Atliq Exclusive" GROUP BY Month, Year ORDER BY Gross_Sales_Amount;
+
+
+
+-- ----------------------------------------------------------------------------------------------
+
+-- 8 Q
+
+SELECT QUARTER(date) AS Quarter, SUM(sold_quantity) AS total_sold_quantity FROM fact_sales_monthly
+		WHERE YEAR(date) = 2020
+        GROUP BY Quarter ORDER BY total_sold_quantity DESC;
+        
+-- ----------------------------------------------------------------------------------------------
+
+-- 9 Q
+
+WITH channelQ AS (
+				SELECT d.channel AS channel,
+                SUM(fg.gross_price * fs.sold_quantity)/1000000 AS gross_sales_mln
+                FROM dim_customer AS d INNER JOIN fact_sales_monthly AS fs ON
+                d.customer_code = fs.customer_code INNER JOIN fact_gross_price AS fg
+                ON fs.product_code = fg.product_code WHERE fg.fiscal_year = 2021
+                GROUP BY d.channel ),
+total_sales AS (
+				SELECT SUM(gross_sales_mln) AS total_sales FROM channelQ)
+                
+SELECT channel, ROUND(gross_sales_mln, 2) AS gross_sales_mln, ROUND((gross_sales_mln / total_sales) * 100, 2) AS percentage
+		FROM channelQ, total_sales ORDER BY gross_sales_mln ;
+        
+-- ----------------------------------------------------------------------------------------------
+
+-- 10 Q
+
+WITH total_quantity AS (
+					SELECT d.division AS division, d.product_code AS product_code, 
+                    d.product AS product, 
+                    SUM(fs.sold_quantity) AS total_sold_quantity,
+                    DENSE_RANK() OVER(PARTITION BY division ORDER BY SUM(fs.sold_quantity) DESC)
+                    AS rank_order
+                    FROM dim_product AS d INNER JOIN fact_sales_monthly AS fs ON
+                    d.product_code = fs.product_code WHERE fs.fiscal_year = 2021 
+                    GROUP BY division, product_code, product
+                   )
+                   
+		
+SELECT division, product_code, product, total_sold_quantity, rank_order 
+		FROM total_quantity
+		WHERE rank_order IN (1, 2, 3);
