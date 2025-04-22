@@ -3,6 +3,7 @@
 ## 📁 Project Overview
 
 This SQL project focuses on analyzing a retail/fmcg-style database involving customers, products, pricing, manufacturing, and sales. It uses **advanced SQL techniques** like CTEs, aggregations, joins, subqueries, and window functions to derive business insights from transactional and dimensional data.
+NOTE: I have also included Power BI visualization file named "atliq power bi.pdf", in which i have turned the insights and visually interepreted it using Power BI tool.
 
 ---
 
