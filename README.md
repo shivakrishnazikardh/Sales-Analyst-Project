@@ -33,7 +33,7 @@ This SQL project focuses on analyzing a retail/fmcg-style database involving cus
 ## 🔍 Query Descriptions
 
 ### 1️⃣ Query: Market Identification
-**Goal:** Identify which market "Atliq Exclusive" operates in within the "APAC" region.  
+**Goal:** Identify which market "Atliq Exclusive" operates in within the world map.  
 **SQL:** `SELECT DISTINCT market ...`
 
 ---
